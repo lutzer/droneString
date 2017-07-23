@@ -32,11 +32,27 @@ long enc2_oldPosition = 0;
 DDS dds1(DDS1_W_CLK, DDS1_FQ_UD, DDS1_DATA, DDS1_RESET);
 DDS dds2(DDS2_W_CLK, DDS2_FQ_UD, DDS2_DATA, DDS2_RESET);
 
+String serialBuffer = "";         // a String to hold incoming data
+boolean newSerialMessage = false;
+
 // exponential growing function
 double calculateFrequency(long enc1_pos, long enc2_pos) {
   double mainFreq = exp((float)enc1_pos / ENCODER_MAX_STEPS * 6.8);
   double fineFreq = mainFreq * 0.1 * enc2_pos / ENCODER_MAX_STEPS;
   return mainFreq + fineFreq;
+}
+
+void clearSerialMessage() {
+  newSerialMessage = false;
+  serialBuffer = "";
+}
+
+bool comparePrefix(String string, String prefix) {
+  for (int i=0;i<prefix.length();i++) {
+    if (string[i] != prefix[i])
+      return false;
+  }
+  return true;
 }
 
 void setup() {
@@ -56,10 +72,28 @@ void setup() {
   dds1.setFrequency(startFreq);
   dds2.setFrequency(startFreq*2);
 
+  serialBuffer.reserve(100);
   Serial.println("started");
 }
 
 void loop() {
+
+  // read serial messages
+  if (newSerialMessage) {
+    if (comparePrefix(serialBuffer, "f1:")) {
+      double frequency = serialBuffer.substring(3).toDouble();
+      Serial.print(serialBuffer);
+      dds1.setFrequency(frequency);
+
+    } else if (comparePrefix(serialBuffer, "f2:")) {
+      double frequency = serialBuffer.substring(3).toDouble();
+      Serial.print(serialBuffer);
+      dds2.setFrequency(frequency);
+    }
+    clearSerialMessage();
+  }
+
+  // read encoder positions
   long enc1_newPosition = encoder1.read();
   long enc2_newPosition = encoder2.read();
   if (enc1_newPosition != enc1_oldPosition || enc2_newPosition != enc2_oldPosition) {
@@ -76,5 +110,18 @@ void loop() {
 
     Serial.print("f1:");
     Serial.println(frequency);
+
+    Serial.print("f2:");
+    Serial.println(frequency * 2);
+  }
+}
+
+void serialEvent() {
+  while (Serial.available() && !newSerialMessage) {
+    char inChar = (char)Serial.read();
+    serialBuffer += inChar;
+    if (inChar == '\n') {
+      newSerialMessage = true;
+    }
   }
 }
