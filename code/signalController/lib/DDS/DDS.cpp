@@ -24,9 +24,9 @@ void DDS::setFrequency(double frequency)
   int32_t freq = frequency * 4294967295/_TrimFreq;
   for (int b=0; b<4; b++, freq>>=8) {
     shiftOut(_DATA, _W_CLK, LSBFIRST, freq & 0xFF);
-  } 
-  shiftOut(_DATA, _W_CLK, LSBFIRST, 0x00);  
-  pulseHigh(_FQ_UD); 
+  }
+  shiftOut(_DATA, _W_CLK, LSBFIRST, 0x00);
+  pulseHigh(_FQ_UD);
 }
 
 void DDS::init()
@@ -43,8 +43,8 @@ void DDS::init_priv()
 
   	pulseHigh(_RESET);
   	pulseHigh(_W_CLK);
-  	pulseHigh(_FQ_UD);  
-        setFrequency(0); 
+  	pulseHigh(_FQ_UD);
+    setFrequency(0); 
 }
 
 void DDS::trim(double TrimFreq)
@@ -53,8 +53,8 @@ void DDS::trim(double TrimFreq)
 }
 
 // Subroutine to generate a positive pulse on 'pin'...
-void DDS::pulseHigh(int _pin) 
+void DDS::pulseHigh(int _pin)
 {
 digitalWrite(_pin, HIGH);
-digitalWrite(_pin, LOW); 
+digitalWrite(_pin, LOW);
 }

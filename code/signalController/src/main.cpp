@@ -12,19 +12,25 @@
 #include <Encoder.h>
 #include <DDS.h>
 
-#define W_CLK 8       // Pin 8 - connect to AD9850 module word load clock pin (CLK)
-#define FQ_UD 9       // Pin 9 - connect to freq update pin (FQ)
-#define DATA 10       // Pin 10 - connect to serial data load pin (DATA)
-#define RESET 11      // Pin 11 - connect to reset pin (RST).
+#define DDS1_W_CLK 6       // connect to AD9850 module word load clock pin (CLK)
+#define DDS1_FQ_UD 7       // connect to freq update pin (FQ)
+#define DDS1_DATA 8       // connect to serial data load pin (DATA) - shared
+#define DDS1_RESET 9      // connect to reset pin (RST) - shared
+
+#define DDS2_W_CLK 10       // connect to AD9850 module word load clock pin (CLK)
+#define DDS2_FQ_UD 11      // connect to freq update pin (FQ)
+#define DDS2_DATA 8       // connect to serial data load pin (DATA) - shared
+#define DDS2_RESET 9      // connect to reset pin (RST) - shared
 
 #define ENCODER_MAX_STEPS 600
 
-Encoder encoder1(3, 4);
-Encoder encoder2(5, 6);
+Encoder encoder1(2, 3);
+Encoder encoder2(4, 5);
 long enc1_oldPosition = 0;
 long enc2_oldPosition = 0;
 
-DDS dds(W_CLK, FQ_UD, DATA, RESET);
+DDS dds1(DDS1_W_CLK, DDS1_FQ_UD, DDS1_DATA, DDS1_RESET);
+DDS dds2(DDS2_W_CLK, DDS2_FQ_UD, DDS2_DATA, DDS2_RESET);
 
 // exponential growing function
 double calculateFrequency(long enc1_pos, long enc2_pos) {
@@ -34,7 +40,8 @@ double calculateFrequency(long enc1_pos, long enc2_pos) {
 }
 
 void setup() {
-  dds.init();
+  dds1.init();
+  dds2.init();
 
   Serial.begin(9600);
 
@@ -44,7 +51,10 @@ void setup() {
   encoder1.write(enc1_oldPosition);
   encoder2.write(enc2_oldPosition);
 
-  dds.setFrequency(calculateFrequency(enc1_oldPosition, enc2_oldPosition));
+  double startFreq = calculateFrequency(enc1_oldPosition, enc2_oldPosition);
+
+  dds1.setFrequency(startFreq);
+  dds2.setFrequency(startFreq*2);
 
   Serial.println("started");
 }
@@ -61,8 +71,9 @@ void loop() {
 
     double frequency = calculateFrequency(enc1_newPosition, enc2_newPosition);
 
-    dds.setFrequency(frequency);
-    
+    dds1.setFrequency(frequency);
+    dds2.setFrequency(frequency*2);
+
     Serial.print("f1:");
     Serial.println(frequency);
   }
