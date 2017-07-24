@@ -48,6 +48,8 @@ void clearSerialMessage() {
 }
 
 bool comparePrefix(String string, String prefix) {
+  if (string.length() < prefix.length())
+    return false;
   for (int i=0;i<prefix.length();i++) {
     if (string[i] != prefix[i])
       return false;
@@ -59,9 +61,9 @@ void setup() {
   dds1.init();
   dds2.init();
 
-  Serial.begin(9600);
+  Serial.begin(115200);
 
-  enc1_oldPosition = ENCODER_MAX_STEPS * 0.9;
+  enc1_oldPosition = 0;
   enc2_oldPosition = 0;
 
   encoder1.write(enc1_oldPosition);
