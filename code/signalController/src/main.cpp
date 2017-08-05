@@ -1,14 +1,5 @@
 #include <Arduino.h>
 
-/*
- * A simple single freq AD9850 Arduino test script
- * Original AD9851 DDS sketch by Andrew Smallbone at www.rocketnumbernine.com
- * Modified for testing the inexpensive AD9850 ebay DDS modules
- * Pictures and pinouts at nr8o.dhlpilotcentral.com
- * 9850 datasheet at http://www.analog.com/static/imported-files/data_sheets/AD9850.pdf
- * Use freely
- */
-
 #include <Encoder.h>
 #include <DDS.h>
 
@@ -23,6 +14,8 @@
 #define DDS2_RESET 9      // connect to reset pin (RST) - shared
 
 #define ENCODER_MAX_STEPS 600
+
+typedef unsigned int uint;
 
 Encoder encoder1(2, 3);
 Encoder encoder2(4, 5);
@@ -50,7 +43,7 @@ void clearSerialMessage() {
 bool comparePrefix(String string, String prefix) {
   if (string.length() < prefix.length())
     return false;
-  for (int i=0;i<prefix.length();i++) {
+  for (uint i=0;i<prefix.length();i++) {
     if (string[i] != prefix[i])
       return false;
   }
